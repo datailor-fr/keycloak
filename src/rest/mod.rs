@@ -114,6 +114,7 @@ impl KeycloakAdminToken {
         password: &str,
         realm: &str,
         client_id: &str,
+        client_secret: &str,
         grant_type: &str,
         client: &reqwest::Client,
     ) -> Result<KeycloakAdminToken, KeycloakError> {
@@ -125,6 +126,7 @@ impl KeycloakAdminToken {
                 "username": username,
                 "password": password,
                 "client_id": client_id,
+                "client_secret": client_secret,
                 "grant_type": grant_type
             }))
             .send()
