@@ -50,6 +50,7 @@ impl KeycloakAdminToken {
             password,
             "master",
             "admin-cli",
+            None,
             "password",
             client,
         )
@@ -62,20 +63,34 @@ impl KeycloakAdminToken {
         password: &str,
         realm: &str,
         client_id: &str,
+        client_secret: Option<&str>,
         grant_type: &str,
         client: &reqwest::Client,
     ) -> Result<KeycloakAdminToken, KeycloakError> {
+        let mut json_object = json!({
+            "username": username,
+            "password": password,
+            "client_id": client_id,
+            "grant_type": grant_type
+        });
+        match client_secret {
+            Some(client_secret) => {
+                json_object = json!({
+                    "username": username,
+                    "password": password,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "grant_type": grant_type
+                });
+            }
+            None => (),
+        }
         let response = client
             .post(&format!(
                 "{}/auth/realms/{}/protocol/openid-connect/token",
                 url, realm
             ))
-            .form(&json!({
-                "username": username,
-                "password": password,
-                "client_id": client_id,
-                "grant_type": grant_type
-            }))
+            .form(&json_object)
             .send()
             .await?;
         Ok(error_check(response).await?.json().await?)
